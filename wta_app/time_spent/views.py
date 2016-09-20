@@ -6,7 +6,7 @@ from flask_cors import cross_origin
 from sqlalchemy import func
 
 from wta_app import db
-from wta_app.helpers import add_then_commit, len_of_colors, list_of_colors
+from wta_app.helpers import add_then_commit, PIE_COLORS
 from wta_app.models import Account, Host, Time, host_times
 
 times = Blueprint('time', __name__, url_prefix='/api')
@@ -58,11 +58,10 @@ def get_time_spent():
 	def results_to_dict(results):
 		""" Generates informative dicts from tuples. """
 		for i, (key, val) in enumerate(results):
-			random_int = random.randrange(len_of_colors)
 			yield {
 				'label': key,
 				'value': int(val),
-				'color': list_of_colors[random_int]
+				'color': PIE_COLORS[i]
 			}
 
 	# Get Request Data.
@@ -81,10 +80,9 @@ def get_time_spent():
 		.join(host_times, Time) \
 		.filter(Time.account_id == account.id) \
 		.filter(Time.seconds >= 60) \
-		.filter(Time.day == today) \
 		.group_by(Host.host_name) \
 		.order_by('seconds desc') \
-		.limit(10) \
+		.limit(6) \
 		.all()
 	return jsonify({'data': list(results_to_dict(query))}), OK_REQUEST
 
@@ -118,5 +116,6 @@ def get_specific_times(host_name):
 		.group_by(Time.day) \
 		.group_by(Host.host_name) \
 		.order_by('day asc') \
+		.limit(6) \
 		.all()
 	return jsonify({'data': list(results_to_dict(query))}), OK_REQUEST
