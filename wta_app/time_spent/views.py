@@ -1,4 +1,3 @@
-import random
 from datetime import date
 
 from flask import Blueprint, jsonify, request
@@ -6,7 +5,7 @@ from flask_cors import cross_origin
 from sqlalchemy import func
 
 from wta_app import db
-from wta_app.helpers import add_then_commit, PIE_COLORS
+from wta_app.helpers import PIE_COLORS, add_then_commit
 from wta_app.models import Account, Host, Time, host_times
 
 times = Blueprint('time', __name__, url_prefix='/api')
@@ -79,6 +78,7 @@ def get_time_spent():
 		func.sum(Time.seconds).label('seconds')) \
 		.join(host_times, Time) \
 		.filter(Time.account_id == account.id) \
+		.filter(Time.day == today) \
 		.filter(Time.seconds >= 60) \
 		.group_by(Host.host_name) \
 		.order_by('seconds desc') \
